@@ -40,6 +40,12 @@ CREATE TABLE public.m_item (
 	m_supp_id int8 NULL,
 	default_price_sale numeric(18, 2) NULL,
 	barcode varchar(255) NULL,
+	wholesale_min_qty INTEGER DEFAULT 0,
+	wholesale_unit_price DECIMAL(15,2) DEFAULT 0,
+	wholesale_2_min_qty INTEGER DEFAULT 0,
+	wholesale_2_unit_price DECIMAL(15,2) DEFAULT 0,
+	wholesale_3_min_qty INTEGER DEFAULT 0,
+	wholesale_3_unit_price DECIMAL(15,2) DEFAULT 0,
 	CONSTRAINT m_item_pkey PRIMARY KEY (id)
 );
 CREATE INDEX idx_m_item_code ON public.m_item USING btree (code);
