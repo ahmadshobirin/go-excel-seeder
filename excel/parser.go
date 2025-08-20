@@ -15,15 +15,14 @@ import (
 
 // ExcelHeaderMapping mapping header Excel ke field struct (case-insensitive)
 var ExcelHeaderMapping = map[string]string{
-	"kode barang": "Code",
-	"nama barang": "ItemName",
-	"satuan":      "Unit",
-	"harga beli":  "PriceBase",
-	"harga jual":  "DefaultPriceSale",
-	"manufaktur":  "Mnfct",
-	"spesifikasi": "Spec",
-	"barcode":     "Barcode",
-	"berat":       "Weight",
+	"kode barang":    "Barcode",
+	"nama barang":    "ItemName",
+	"harga beli":     "PriceBase",
+	"harga jual":     "DefaultPriceSale",
+	"jumlah partai1": "WholesaleMinQty",
+	"harga partai1":  "WholesaleUnitPrice",
+	"jumlah partai2": "Wholesale2MinQty",
+	"harga partai2":  "Wholesale2UnitPrice",
 }
 
 // RequiredFields daftar field yang wajib diisi
@@ -62,7 +61,6 @@ func ParseExcelToMItems(filename string) ([]models.MItem, error) {
 		return nil, fmt.Errorf("Excel file is empty")
 	}
 
-	// Buat mapping index kolom
 	headers := rows[0]
 	columnIndexes := make(map[string]int)
 
@@ -123,10 +121,51 @@ func setItemValues(item *models.MItem, row []string, columnIndexes map[string]in
 		}
 		item.PriceBase = price
 	} else {
-		item.PriceBase = 0 // Default to 0 if not provided
+		item.PriceBase = 0
+		// return fmt.Errorf("PriceBase is required")
 	}
 
-	// Set optional fields
+	// Set Barcode (optional)
+	if barcode := getCellValue("Barcode"); barcode != "" {
+		item.Barcode = utils.StringPtr(barcode)
+	}
+
+	// Set DefaultPriceSale (optional)
+	if defaultPriceStr := getCellValue("DefaultPriceSale"); defaultPriceStr != "" {
+		if price, err := strconv.ParseFloat(defaultPriceStr, 64); err == nil {
+			item.DefaultPriceSale = utils.Float64Ptr(price)
+		} else {
+			log.Printf("Warning: invalid DefaultPriceSale '%s', skipping", defaultPriceStr)
+		}
+	}
+
+	// Set Wholesale Tier 1 fields
+	if wholesaleMinQtyStr := getCellValue("WholesaleMinQty"); wholesaleMinQtyStr != "" {
+		if qty, err := strconv.ParseFloat(wholesaleMinQtyStr, 64); err == nil {
+			item.WholesaleMinQty = utils.Float64Ptr(qty)
+		}
+	}
+
+	if wholesalePriceStr := getCellValue("WholesaleUnitPrice"); wholesalePriceStr != "" {
+		if price, err := strconv.ParseFloat(wholesalePriceStr, 64); err == nil {
+			item.WholesaleUnitPrice = utils.Float64Ptr(price)
+		}
+	}
+
+	// Set Wholesale Tier 2 fields
+	if wholesale2MinQtyStr := getCellValue("Wholesale2MinQty"); wholesale2MinQtyStr != "" {
+		if qty, err := strconv.ParseFloat(wholesale2MinQtyStr, 64); err == nil {
+			item.Wholesale2MinQty = utils.Float64Ptr(qty)
+		}
+	}
+
+	if wholesale2PriceStr := getCellValue("Wholesale2UnitPrice"); wholesale2PriceStr != "" {
+		if price, err := strconv.ParseFloat(wholesale2PriceStr, 64); err == nil {
+			item.Wholesale2UnitPrice = utils.Float64Ptr(price)
+		}
+	}
+
+	// Set optional fields (existing)
 	if code := getCellValue("Code"); code != "" {
 		item.Code = utils.StringPtr(code)
 	}
@@ -139,17 +178,11 @@ func setItemValues(item *models.MItem, row []string, columnIndexes map[string]in
 	if spec := getCellValue("Spec"); spec != "" {
 		item.Spec = utils.StringPtr(spec)
 	}
-	if barcode := getCellValue("Barcode"); barcode != "" {
-		item.Barcode = utils.StringPtr(barcode)
-	}
-	if defaultPriceStr := getCellValue("DefaultPriceSale"); defaultPriceStr != "" {
-		if price, err := strconv.ParseFloat(defaultPriceStr, 64); err == nil {
-			item.DefaultPriceSale = utils.Float64Ptr(price)
-		}
-	}
 	if weightStr := getCellValue("Weight"); weightStr != "" {
 		if weight, err := strconv.ParseFloat(weightStr, 64); err == nil {
 			item.Weight = utils.Float64Ptr(weight)
+		} else {
+			log.Printf("Warning: invalid Weight '%s', skipping", weightStr)
 		}
 	}
 
