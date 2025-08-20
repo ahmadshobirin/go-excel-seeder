@@ -1,2 +1,32 @@
+.PHONY: help build run test docker-up docker-down clean
+
+# Default target
+help:
+	@echo "Available commands:"
+	@echo "  build         - Build the Go application"
+	@echo "  run           - Run seeder with database output"
+	@echo "  test          - Run tests"
+	@echo "  docker-up     - Start PostgreSQL database"
+	@echo "  docker-down   - Stop database"
+	@echo "  clean         - Clean build artifacts"
+
+# Application commands
+build:
+	go build -o bin/excel-seeder main.go
+
 run:
 	go run main.go -config=config.local.yaml -excel=file/MasterBarang.xlsx -output=seeder
+
+test:
+	go test ./...
+
+# Docker commands
+docker-up:
+	@echo "Starting PostgreSQL database..."
+	docker-compose up -d
+	@echo "Database started on localhost:5432"
+
+docker-down:
+	docker-compose down
+clean:
+	rm -rf bin/
