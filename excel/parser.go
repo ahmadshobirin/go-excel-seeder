@@ -17,8 +17,8 @@ import (
 var ExcelHeaderMapping = map[string]string{
 	"kode barang":    "Barcode",
 	"nama barang":    "ItemName",
-	"harga beli":     "PriceBase",
-	"harga jual":     "DefaultPriceSale",
+	"hargabeli":      "PriceBase",
+	"hargajual":      "DefaultPriceSale",
 	"jumlah partai1": "WholesaleMinQty",
 	"harga partai1":  "WholesaleUnitPrice",
 	"jumlah partai2": "Wholesale2MinQty",
